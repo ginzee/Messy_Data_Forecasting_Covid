@@ -1,4 +1,4 @@
-# 📊 COVID_Mortality_Forecasting — Messy Data Wrangling & Seasonal Forecasting Case Study  
+# Messy Data Forecasting — COVID Case/Death Signals (US, Germany, Spain, Italy)
 
 **Author:** Sam Ginzburg  
 **Email:** samginzee@gmail.com  
@@ -39,17 +39,29 @@ The project is intentionally scoped as an **analytical and forecasting exercise*
 
 ## Methods & Skills Demonstrated  
 
-This project highlights the following technical and analytical competencies:
+### Tooling & Technical Stack
 
-- **Python** (data pipelines, analysis, forecasting)
-- **Pandas** (cleaning, joins, grouping, time-series transformations)
-- **Time-Series Aggregation** (daily → weekly alignment)
-- **Data Quality Assessment** (nulls, reporting inconsistencies, structural limitations)
-- **Feature Engineering** (incremental vs. cumulative metrics)
-- **Seasonal Modeling** (sinusoidal regression with trend)
-- **Analytical Decision-Making Under Constraints**
-- **Clear Communication of Assumptions & Limitations**
-- **Portfolio-minded Project Structuring**
+- **Python** — data pipelines, exploratory analysis, forecasting
+- **Pandas** — cleaning, joins, grouping, time-series transformations
+- **NumPy / SciPy** — numerical operations, sinusoidal regression
+- **Matplotlib** — publication-style visualizations and annotations
+- **Time-Series Aggregation** — daily → weekly alignment
+
+### Analytical Methods & Judgment
+
+- **Data Cleaning & Validation**  
+  Type coercion, missing-value handling, finite checks, date parsing, de-duplication, and weekly aggregation
+- **Outlier & Scale Management**  
+  Percentile capping, conservative filters, indexed series, and z-score standardization for cross-country comparisons
+- **Statistical Analysis**  
+  Pearson correlations, R² interpretation, aligned reporting windows, and pairwise country comparisons
+- **Seasonal Time-Series Modeling**  
+  Fixed-period (52-week) sinusoidal regression, moving averages, and forward projections
+- **Decision-Making Under Data Constraints**  
+  Explicit handling of unreliable reporting (Spain) and creative proxy-based estimation where data was unavailable (Italy)
+- **Transparent Communication of Assumptions**  
+  Clear documentation of modeling choices, time-window selection (2020+ vs 2021+), and limitations (“garbage in, garbage out”)
+
 
 ---
 
@@ -72,21 +84,127 @@ This project highlights the following technical and analytical competencies:
 
 ---
 
-## Results & Insights  
+## Key Analyses in This Notebook
 
-- Countries differ significantly in data completeness and reliability  
-  - The United States and Germany report consistent mortality trends  
-  - Spain exhibits reporting inconsistencies that limit interpretability  
-  - Italy lacks death data entirely, requiring indirect estimation  
+This project explores COVID-19 mortality patterns across multiple countries using a combination of statistical normalization, correlation analysis, seasonal time-series modeling, and transparent handling of data limitations. Rather than imposing a single modeling approach on inconsistent international datasets, each analysis was tailored to the structure and reliability of the available data.
 
-- Mortality trends across countries show strong seasonal behavior  
-  - 1–2 peaks per year, typically in winter  
-  - Summer troughs appear consistently  
+---
 
-- Vaccination rates did not exhibit stable inverse correlation with deaths  
-  - Variant emergence (Delta, Omicron) confounded simple causal relationships  
+### 1. Cross-Country Trend Comparison Using Standardization (Z-Scores)
 
-- Proxy modeling can provide *plausible* forecasts when direct data is unavailable, but uncertainty must be clearly communicated  
+Raw COVID death counts vary dramatically by country due to population size, reporting practices, and healthcare capacity. Direct comparison of absolute values obscures meaningful temporal patterns.
+
+To enable comparability, weekly death series were:
+
+- Aggregated to weekly frequency  
+- Smoothed using a 4-week moving average  
+- Standardized using z-scores (mean = 0, standard deviation = 1)
+
+This transformation allows trends to be compared directionally and temporally, rather than by magnitude alone.
+
+**Key insight:**  
+Despite large differences in absolute death counts, the United States, Germany, and Spain exhibit broadly similar seasonal dynamics during major pandemic waves. This reinforces the importance of normalization when comparing international time series.
+
+![Z-Score Cross-Country Comparison](assets/Z-Score_Country_Comparison.png)
+
+---
+
+### 2. Cross-Country Correlation Analysis → Creative Modeling for Italy
+
+Rather than correlating raw deaths or case counts, this analysis focused on **weekly deaths-to-cases ratios**, a more comparable severity metric across countries.
+
+Pairwise scatter plots were constructed for:
+
+- United States vs Germany  
+- United States vs Spain  
+- Germany vs Spain  
+
+Each comparison includes:
+
+- Aligned weekly observations only  
+- Pearson correlation coefficients (r)  
+- R² values and statistical significance  
+
+**Key insight:**  
+The strongest relationship appears between the United States and Germany, indicating similar reporting behavior and epidemic dynamics. Spain’s weaker correlations foreshadow downstream modeling challenges tied to data reliability.
+
+![Cross-Country Correlation Trends](assets/US_Correlation_Trends.png)
+
+#### Extending the Insight: Estimating Deaths for Italy (Missing Outcome Data)
+
+Italy presented a different constraint: **death data was unavailable**, while case data was reliable.
+
+To estimate deaths:
+
+- Weekly deaths-to-cases ratios were computed for the two most statistically aligned countries (U.S. and Germany)
+- A weighted average ratio was derived
+- Italy’s weekly case counts were converted into estimated deaths
+- A sinusoidal seasonal model was fitted to the estimated series
+- A 52-week forward projection was generated
+
+This approach leverages **cross-country statistical alignment** to construct a transparent estimator under real-world data constraints.
+
+![Creative Correlation Logic for Italy](assets/Creative_Correlation_Italy.png)  
+![Italy Estimated Deaths and Forecast](assets/Italy_Forecast.png)
+
+**Key insight:**  
+This section demonstrates analytical problem-solving under imperfect conditions — building a defensible proxy when a key variable is missing, while clearly communicating assumptions and uncertainty.
+
+---
+
+### 3. U.S. Seasonal Modeling — Why Time-Window Selection Matters
+
+To model seasonality in U.S. COVID deaths, a fixed 52-week sinusoidal regression was applied. Two alternative fitting windows were explicitly tested:
+
+- **All available data (2020+)**
+- **Post-2021 only**, after early-pandemic reporting volatility stabilized
+
+![U.S. Sinusoidal Fit — All Data (2020+)](assets/US_2020_Regression.png)  
+![U.S. Sinusoidal Fit — 2021 Onward](assets/US_2021_Regression.png)
+
+**Key insight:**  
+Including early-2020 data materially distorts the seasonal signal due to structural breaks, inconsistent reporting, and pandemic shock effects. Restricting the model to 2021 onward produces a smoother, more interpretable seasonal pattern and a more defensible forecast.
+
+---
+
+### 4. U.S. Forecasting with Explicit Assumptions
+
+Using the preferred post-2021 sinusoidal fit, a 52-week forward projection was generated. Observed deaths were plotted using a 4-week moving average to emphasize trend over noise.
+
+![U.S. Seasonal Forecast](assets/US_Forecast.png)
+
+**Key insight:**  
+This forecast is not presented as a causal model. It is a seasonality-driven projection intended to illustrate how recurring patterns can be extracted — and cautiously extrapolated — from noisy public-health data.
+
+---
+
+### 5. Spain Case Study — Data Quality and “Garbage In, Garbage Out”
+
+Spain’s reported COVID death data contains significant quality issues, including extended periods reporting zero deaths during known waves of viral activity.
+
+A sinusoidal model was nevertheless applied for demonstration purposes.
+
+![Spain Forecast — Garbage In, Garbage Out](assets/Spain_Forecast_Garbage_In_Garbage_Out.png)
+
+**Key insight:**  
+While a forecast can always be computed, this section illustrates a core analytical principle:
+
+> Model sophistication cannot compensate for unreliable inputs.
+
+Rather than masking this limitation, the analysis explicitly highlights it — an essential skill in real-world analytics.
+
+---
+
+### Final Takeaway
+
+Across all analyses, the emphasis is not on producing a single “perfect” model, but on:
+
+- Matching methodology to data reality  
+- Testing assumptions explicitly  
+- Handling imperfect data honestly  
+- Communicating limitations clearly  
+
+These are the same trade-offs analysts face in production environments — and the skills this project is designed to showcase.
 
 ---
 
