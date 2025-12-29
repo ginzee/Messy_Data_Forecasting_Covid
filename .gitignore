@@ -1,1 +1,43 @@
+# =========================
+# Git internals (explicit)
+# =========================
+.git/
+
+# =========================
+# Python
+# =========================
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.env
+.venv
+venv/
+
+# =========================
+# Jupyter
+# =========================
+.ipynb_checkpoints/
+
+# =========================
+# OS / Editor noise
+# =========================
 .DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# =========================
+# Raw data (not committed)
+# =========================
+data/raw/
+data/raw/**
+
+# =========================
+# Temporary / generated files
+# =========================
+*.log
+*.tmp
+*.swp
+
+

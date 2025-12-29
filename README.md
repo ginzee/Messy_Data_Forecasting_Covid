@@ -25,7 +25,7 @@ Rather than producing high-confidence predictions, this project emphasizes **ana
 
 This project delivers an end-to-end analytical case study that:
 
-- Loads and cleans multiple public health datasets (demographics, epidemiology, hospitalizations, vaccinations, health indicators)
+- Loads and cleans multiple public health datasets (via a modular Python ETL pipeline)
 - Resolves inconsistent temporal structures through weekly aggregation
 - Handles cumulative vs. incremental metrics to prevent double-counting
 - Merges static and time-varying data responsibly
@@ -46,6 +46,7 @@ The project is intentionally scoped as an **analytical and forecasting exercise*
 - **NumPy / SciPy** — numerical operations, sinusoidal regression
 - **Matplotlib** — publication-style visualizations and annotations
 - **Time-Series Aggregation** — daily → weekly alignment
+- **ETL & Data Pipelines** — modular ingestion, cleaning, and aggregation with explicit safeguards against temporal leakage and cumulative double-counting
 
 ### Analytical Methods & Judgment
 
@@ -128,7 +129,7 @@ Each comparison includes:
 **Key insight:**  
 The strongest relationship appears between the United States and Germany, indicating similar reporting behavior and epidemic dynamics. Spain’s weaker correlations foreshadow downstream modeling challenges tied to data reliability.
 
-![Cross-Country Correlation Trends](assets/US_Correlation_Trends.png)
+![Creative Correlation Logic for Italy](assets/Creative_Correlation_Italy.png)  
 
 #### Extending the Insight: Estimating Deaths for Italy (Missing Outcome Data)
 
@@ -144,7 +145,6 @@ To estimate deaths:
 
 This approach leverages **cross-country statistical alignment** to construct a transparent estimator under real-world data constraints.
 
-![Creative Correlation Logic for Italy](assets/Creative_Correlation_Italy.png)  
 ![Italy Estimated Deaths and Forecast](assets/Italy_Forecast.png)
 
 **Key insight:**  
@@ -211,22 +211,37 @@ These are the same trade-offs analysts face in production environments — and t
 ## Project Structure  
 
 ```text
-COVID_Mortality_Forecasting/
+Messy_Data_Forecasting_Covid/
+├── requirements.txt
+├── README.md
+├── .gitignore
 │
-├── notebooks/
-│   ├── final_analysis.ipynb        # Portfolio-facing, curated analysis
-│   └── analysis_exploration.ipynb  # Extended exploratory work & reasoning
-│
-├── scripts/
-│   ├── load_data.py
-│   └── clean_data.py
+├── src/
+│   └── etl/
+│       ├── etl.py
+│       └── lib/
+│           ├── load_data.py
+│           ├── clean_data.py
+│           ├── merge_data.py
+│           └── filter_data.py
 │
 ├── data/
-│   └── final_merge.csv
+│   ├── final_merge.csv
+│   └── raw/ (.gitignore)
 │
-├── requirements.txt
-├── .gitignore
-└── README.md
+├── notebooks/
+│   ├── final_analysis.ipynb
+│   └── analysis_exploration.ipynb
+│
+└── assets/
+    ├── Creative_Correlation_Italy
+    ├── Italy_Forecast
+    ├── Spain_Forecast_Garbage_In_Garbage_Out
+    ├── US_Correlation_Trends
+    ├── US_Forecast
+    ├── US_2021_Regression
+    ├── US_2020_Regression
+    └── Z-Score_Country_Comparison
 ```
 ---
 
